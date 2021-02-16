@@ -1,0 +1,44 @@
+name: "UPDATE"
+
+on:
+  issues:
+    types: [unlabeled]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, '👍 Accepted') && !contains(github.event.issue.title, '/') && !contains(github.event.issue.title, '\') && !contains(github.event.issue.title, '&') && !contains(github.event.issue.title, '_') && !contains(github.event.issue.title, '*') && !contains(github.event.issue.title, '@') && !contains(github.event.issue.title, '$') && !contains(github.event.issue.title, '%') && !contains(github.event.issue.title, '"') && !contains(github.event.issue.title, '{') && !contains(github.event.issue.title, '}') && !contains(github.event.issue.title, '[') && !contains(github.event.issue.title, ']') && !contains(github.event.issue.title, '(') && !contains(github.event.issue.title, ')') && !contains(github.event.issue.title, '.') && !contains(github.event.issue.title, ';') && !contains(github.event.issue.title, '<') && !contains(github.event.issue.title, '>') && !contains(github.event.issue.title, ':') && !contains(github.event.issue.title, '-') && !contains(github.event.issue.title, '=') && !contains(github.event.issue.title, '!') && !contains(github.event.issue.title, '?') && !contains(github.event.issue.title, '^') && !contains(github.event.issue.title, '~')
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+    - name: Run update.py
+      env:
+        USER: ${{ github.event.issue.user.login }}
+        TITLE: ${{ github.event.issue.title }}
+        GIT_NAME: ${{ secrets.gitName }}
+        GIT_EMAIL: ${{ secrets.gitEmail }}
+      run: |
+        python update.py
+    - name: Add changes and push
+      env:
+        GIT_NAME: ${{ secrets.gitName }}
+        GIT_EMAIL: ${{ secrets.gitEmail }}
+      run: |
+        git config --global user.name "$GIT_NAME"
+        git config --global user.email "$GIT_EMAIL"
+        git add fortune.vim MESSAGES.md
+        git commit -m "A new message has been added!"
+        git push   
+    - name: Close issue
+      uses: actions/github-script@v3
+      with:
+        script: |
+          github.issues.update({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'closed'
+          });

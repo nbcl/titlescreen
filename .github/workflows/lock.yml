@@ -1,0 +1,36 @@
+name: "LOCK"
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    if: contains('_', '_') && !contains(github.event.issue.title, '/') && !contains(github.event.issue.title, '\') && !contains(github.event.issue.title, '&') && !contains(github.event.issue.title, '_') && !contains(github.event.issue.title, '*') && !contains(github.event.issue.title, '@') && !contains(github.event.issue.title, '$') && !contains(github.event.issue.title, '%') && !contains(github.event.issue.title, '"') && !contains(github.event.issue.title, '{') && !contains(github.event.issue.title, '}') && !contains(github.event.issue.title, '[') && !contains(github.event.issue.title, ']') && !contains(github.event.issue.title, '(') && !contains(github.event.issue.title, ')') && !contains(github.event.issue.title, '.') && !contains(github.event.issue.title, ';') && !contains(github.event.issue.title, '<') && !contains(github.event.issue.title, '>') && !contains(github.event.issue.title, ':') && !contains(github.event.issue.title, '-') && !contains(github.event.issue.title, '=') && !contains(github.event.issue.title, '!') && !contains(github.event.issue.title, '?') && !contains(github.event.issue.title, '^') && !contains(github.event.issue.title, '~')
+    steps:
+    - uses: actions/checkout@v2 
+    - name: Lock issue
+      uses: actions/github-script@v3
+      with:
+        script: |
+          function update(response, label) {
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: response
+            })
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [label]
+            })
+            github.issues.lock({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+          }
+          update('Your title is awaiting acceptance.', '✋ Waiting');
